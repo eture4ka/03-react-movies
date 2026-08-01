@@ -1,3 +1,5 @@
+// Спільні типи, що використовуються в кількох компонентах.
+
 export interface Movie {
   id: number;
   poster_path: string;

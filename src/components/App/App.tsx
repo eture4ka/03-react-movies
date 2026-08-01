@@ -1,61 +1,63 @@
 import { useState } from 'react';
-import type { FormEvent } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
 import type { Movie } from '../../types/movie';
-import { fetchMovies } from '../../services/api';
-import MovieList from '../MovieList/MovieList';
+import { fetchMovies } from '../../services/movieService';
+import SearchBar from '../SearchBar/SearchBar';
+import MovieGrid from '../MovieGrid/MovieGrid';
+import Loader from '../Loader/Loader';
+import ErrorMessage from '../ErrorMessage/ErrorMessage';
+import MovieModal from '../MovieModal/MovieModal';
 import styles from './App.module.css';
 
 const App = () => {
-  const [query, setQuery] = useState('');
   const [movies, setMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isError, setIsError] = useState(false);
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (query.trim() === '') {
-      setError('Введіть ключове слово для пошуку.');
-      return;
-    }
-
+  const handleSearch = async (query: string) => {
     try {
-      setError(null);
+      setIsError(false);
       setIsLoading(true);
+      setMovies([]);
+
       const results = await fetchMovies(query);
+
+      if (results.length === 0) {
+        toast.error('No movies found for your request.');
+      }
+
       setMovies(results);
     } catch {
-      setError('Не вдалося завантажити фільми. Спробуйте пізніше.');
+      setIsError(true);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleSelect = (movie: Movie) => {
-    console.log('Обрано фільм:', movie.title);
+    setSelectedMovie(movie);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedMovie(null);
   };
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Пошук фільмів</h1>
+    <div className={styles.app}>
+      <SearchBar onSubmit={handleSearch} />
 
-      <form className={styles.form} onSubmit={handleSubmit}>
-        <input
-          className={styles.input}
-          type="text"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Введіть назву фільму"
-        />
-        <button className={styles.button} type="submit">
-          Шукати
-        </button>
-      </form>
+      {isLoading && <Loader />}
+      {isError && <ErrorMessage />}
+      {!isLoading && !isError && (
+        <MovieGrid movies={movies} onSelect={handleSelect} />
+      )}
 
-      {isLoading && <p className={styles.status}>Завантаження…</p>}
-      {error && <p className={styles.error}>{error}</p>}
+      {selectedMovie && (
+        <MovieModal movie={selectedMovie} onClose={handleCloseModal} />
+      )}
 
-      <MovieList movies={movies} onSelect={handleSelect} />
+      <Toaster position="top-center" />
     </div>
   );
 };

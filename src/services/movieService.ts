@@ -16,5 +16,3 @@ export const fetchMovies = async (query: string): Promise<Movie[]> => {
 
   return data.results;
 };
-
-export default api;
