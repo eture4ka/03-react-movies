@@ -8,11 +8,27 @@ import styles from './App.module.css';
 const App = () => {
   const [query, setQuery] = useState('');
   const [movies, setMovies] = useState<Movie[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const results = await fetchMovies(query);
-    setMovies(results);
+
+    if (query.trim() === '') {
+      setError('Введіть ключове слово для пошуку.');
+      return;
+    }
+
+    try {
+      setError(null);
+      setIsLoading(true);
+      const results = await fetchMovies(query);
+      setMovies(results);
+    } catch {
+      setError('Не вдалося завантажити фільми. Спробуйте пізніше.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSelect = (movie: Movie) => {
@@ -35,6 +51,9 @@ const App = () => {
           Шукати
         </button>
       </form>
+
+      {isLoading && <p className={styles.status}>Завантаження…</p>}
+      {error && <p className={styles.error}>{error}</p>}
 
       <MovieList movies={movies} onSelect={handleSelect} />
     </div>

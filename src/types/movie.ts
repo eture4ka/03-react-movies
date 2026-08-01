@@ -1,16 +1,23 @@
-// Спільні типи, що використовуються в кількох компонентах.
-
 export interface Movie {
+  adult: boolean;
+  backdrop_path: string | null;
+  genre_ids: number[];
   id: number;
-  title: string;
+  original_language: string;
+  original_title: string;
   overview: string;
-  posterUrl: string | null;
-  releaseDate: string;
-  rating: number;
+  popularity: number;
+  poster_path: string | null;
+  release_date: string;
+  title: string;
+  video: boolean;
+  vote_average: number;
+  vote_count: number;
 }
 
 export interface MoviesResponse {
   page: number;
   results: Movie[];
-  totalPages: number;
+  total_pages: number;
+  total_results: number;
 }
